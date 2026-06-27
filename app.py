@@ -2,7 +2,10 @@
 Главный файл приложения.
 Запуск: streamlit run app.py
 """
-
+import nltk
+nltk.download("stopwords")
+nltk.download("punkt")
+nltk.download('punkt_tab')
 import streamlit as st
 from similarity import extract_text, compute_similarity
 from preprocessing import preprocess
