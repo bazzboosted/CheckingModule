@@ -1,7 +1,4 @@
-"""
-Главный файл приложения.
-Запуск: streamlit run app.py
-"""
+
 import nltk
 nltk.download("stopwords")
 nltk.download("punkt")
@@ -14,7 +11,6 @@ from highlighting import highlight_text
 
 st.set_page_config(
     page_title="Анализ сходства текстов",
-    page_icon="📄",
     layout="wide"
 )
 
@@ -39,9 +35,6 @@ def similarity_color(pct: float) -> str:
 
 
 def show_preview(fname: str, text: str, pair_f1: str, pair_f2: str, texts_by_name: dict):
-    """
-    Показывает содержимое файла с подсветкой совпадений относительно парного документа.
-    """
     # Определяем с каким файлом сравнивать
     other_fname = pair_f2 if fname == pair_f1 else pair_f1
     other_text = texts_by_name.get(other_fname, "")
@@ -62,7 +55,7 @@ def show_preview(fname: str, text: str, pair_f1: str, pair_f2: str, texts_by_nam
 
 if uploaded_files:
     if len(uploaded_files) < 2:
-        st.warning("⚠ Загрузите хотя бы **2 файла** для сравнения.")
+        st.warning("Загрузите хотя бы 2 файла для сравнения.")
     else:
         st.success(f" Загружено файлов: {len(uploaded_files)}")
 
@@ -131,7 +124,7 @@ if uploaded_files:
                 with btn_close:
                     open_prev = st.session_state["open_preview"]
                     if open_prev and open_prev[0] == rank:
-                        if st.button("✖ Закрыть", key=f"close_{rank}"):
+                        if st.button(" Закрыть", key=f"close_{rank}"):
                             st.session_state["open_preview"] = None
                             st.rerun()
 

@@ -1,7 +1,3 @@
-"""
-Модуль вычисления текстового сходства.
-Использует TF-IDF и косинусное сходство.
-"""
 
 import io
 import docx
@@ -14,10 +10,6 @@ from preprocessing import preprocess
 
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
-    """
-    Извлекает текст из .docx файла.
-    Читает параграфы, таблицы и текстовые блоки внутри фигур.
-    """
     doc = docx.Document(io.BytesIO(file_bytes))
     parts = []
 
@@ -39,23 +31,18 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
 
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """
-    Извлекает текст из .pdf файла.
-    Пробует стандартный метод, при неудаче — собирает текст
-    из отдельных слов с координатами (работает со сложной вёрсткой).
-    """
     parts = []
 
     with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
         for page in pdf.pages:
 
-            # Способ 1: стандартное извлечение
+            #  стандартное извлечение
             page_text = page.extract_text()
             if page_text and page_text.strip():
                 parts.append(page_text)
                 continue
 
-            # Способ 2: собираем текст из отдельных слов
+            # собираем текст из отдельных слов
             # (помогает когда вёрстка многоколоночная или сложная)
             words = page.extract_words()
             if words:
@@ -69,10 +56,6 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
 
 
 def extract_text(uploaded_file) -> str:
-    """
-    Определяет тип файла и извлекает текст.
-    Поддерживает .docx, .pdf и .txt
-    """
     file_bytes = uploaded_file.read()
     name = uploaded_file.name.lower()
 
@@ -87,9 +70,6 @@ def extract_text(uploaded_file) -> str:
 
 
 def compute_similarity(texts: list[str], filenames: list[str], method: str) -> pd.DataFrame:
-    """
-    Вычисляет попарное сходство между всеми документами.
-    """
     processed = []
     for text in texts:
         tokens = preprocess(text, method=method)

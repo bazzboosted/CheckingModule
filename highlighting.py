@@ -1,11 +1,3 @@
-"""
-Модуль поиска и подсветки совпадающих фрагментов между двумя текстами.
-
-Жёлтый — целое предложение ИЛИ 15+ значимых слов подряд
-Красный — несколько предложений подряд ИЛИ 30+ значимых слов подряд
-
-Подсвечивается весь диапазон текста (включая предлоги, союзы и пр.)
-"""
 
 import re
 from preprocessing import clean_text, is_russian, stemmer_en, morph, STOP_WORDS
@@ -13,9 +5,6 @@ from nltk.tokenize import word_tokenize
 
 SHINGLE_YELLOW = 15
 SHINGLE_RED    = 30
-
-
-# ── Базовые утилиты ──────────────────────────────────────────────────────────
 
 def normalize_word(token: str) -> str:
     if is_russian(token):
@@ -28,16 +17,11 @@ def split_sentences(text: str) -> list[str]:
 
 
 def words_of_text(text: str) -> list[str]:
-    """Все слова текста в нижнем регистре (включая стоп-слова)."""
     cleaned = clean_text(text)
     return word_tokenize(cleaned, language="russian")
 
 
 def significant_words(word_list: list[str]) -> list[tuple[int, str]]:
-    """
-    Из списка всех слов возвращает только значимые (не стоп-слова, длина > 2).
-    Возвращает список (индекс_в_исходном_списке, нормализованная_форма).
-    """
     result = []
     for i, w in enumerate(word_list):
         if len(w) > 2 and w not in STOP_WORDS:
@@ -45,18 +29,13 @@ def significant_words(word_list: list[str]) -> list[tuple[int, str]]:
     return result
 
 
-# ── Поиск совпадений ─────────────────────────────────────────────────────────
+# Поиск совпадений 
 
 def find_ranges_by_shingles(
     all_words_a: list[str],
     all_words_b: list[str],
     min_significant: int
 ) -> list[tuple[int, int]]:
-    """
-    Ищет диапазоны [start, end] в all_words_a где подряд идут
-    min_significant совпадающих значимых слов с all_words_b.
-    Возвращает диапазоны по индексам all_words_a (включая стоп-слова внутри).
-    """
     sig_a = significant_words(all_words_a)
     sig_b = significant_words(all_words_b)
 
@@ -88,18 +67,13 @@ def find_ranges_by_sentences(
     text_b: str,
     multi: bool = False
 ) -> list[tuple[int, int]]:
-    """
-    Ищет предложения из text_b которые целиком есть в text_a.
-    multi=True — только блоки из 2+ предложений подряд (для красного).
-    Возвращает диапазоны по индексам all_words_a.
-    """
     sentences_b = [s for s in split_sentences(text_b) if len(s.split()) >= 5]
     sig_b_sets = {}
     for sent in sentences_b:
         words = words_of_text(sent)
         sig = tuple(w[1] for w in significant_words(words))
         if sig:
-            sig_b_sets[sig] = words  # значимые слова → все слова предложения
+            sig_b_sets[sig] = words  # значимые слова все слова предложения
 
     sig_a = significant_words(all_words_a)
     normals_a = [w[1] for w in sig_a]
@@ -140,7 +114,6 @@ def find_ranges_by_sentences(
 
 
 def merge_sig_ranges(ranges: list[tuple[int, int]], gap: int) -> list[tuple[int, int]]:
-    """Сливает перекрывающиеся или близкие диапазоны."""
     if not ranges:
         return []
     ranges = sorted(ranges)
@@ -154,7 +127,6 @@ def merge_sig_ranges(ranges: list[tuple[int, int]], gap: int) -> list[tuple[int,
 
 
 def indices_to_ranges(indices: set[int], gap: int) -> list[tuple[int, int]]:
-    """Превращает множество индексов в список диапазонов [start, end]."""
     if not indices:
         return []
     sorted_idx = sorted(indices)
@@ -171,7 +143,6 @@ def indices_to_ranges(indices: set[int], gap: int) -> list[tuple[int, int]]:
 
 
 def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
-    """Сливает пересекающиеся диапазоны."""
     if not ranges:
         return []
     ranges = sorted(ranges)
@@ -184,12 +155,10 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return [tuple(r) for r in merged]
 
 
-# ── Сборка HTML ──────────────────────────────────────────────────────────────
+#  Сборка HTML
 
 def highlight_text(text: str, other_text: str) -> str:
-    """
-    Возвращает HTML с подсветкой и навигацией по совпадениям.
-    """
+
     all_words_a = words_of_text(text)
 
     if not all_words_a:
